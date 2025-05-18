@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieSphere</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #000;
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            color: #fff;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff0000;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #ff0000;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #cc0000;
+        }
+
+        .toggle-password {
+            cursor: pointer;
+            position: relative;
+            left: 95%;
+            top: -30px;
+            color: #fff;
+        }
+
+        a {
+            color: #ff5555;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #aaa;
+        }
+
+        input[type="checkbox"] {
+            accent-color: #ff0000;
+        }
+
+        #admin-login {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #ff5555;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>MovieSphere</h1>
+</header>
+<main>
+    <section id="signin-section">
+        <h2>Sign In</h2>
+        <form id="signin-form">
+            <div>
+                <label for="signin-email">Email</label>
+                <input type="email" id="signin-email" required>
+            </div>
+            <div>
+                <label for="signin-password">Password</label>
+                <input type="password" id="signin-password" required>
+                <span class="toggle-password">👁️</span>
+            </div>
+            <div>
+                <input type="checkbox" id="remember-me">
+                <label for="remember-me">Remember Me</label>
+                <a href="#" id="recover-password">Need help?</a>
+            </div>
+            <button type="submit">Log In</button>
+            <p>New to MovieSphere? <a href="#" id="show-signup">Sign up now.</a></p>
+        </form>
+        <a href="#" id="admin-login">Admin Login</a>
+    </section>
+    <section id="signup-section" style="display: none;">
+        <h2>Sign Up</h2>
+        <form id="signup-form">
+            <div>
+                <label for="signup-fullname">Full Name</label>
+                <input type="text" id="signup-fullname" required>
+            </div>
+            <div>
+                <label for="signup-email">Email</label>
+                <input type="email" id="signup-email" required>
+            </div>
+            <div>
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" required>
+                <span class="toggle-password">👁️</span>
+            </div>
+            <div>
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" required>
+            </div>
+            <div>
+                <input type="checkbox" id="terms" required>
+                <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+            </div>
+            <button type="submit">Sign Up</button>
+            <button type="button" id="delete-account">Delete</button>
+            <button type="button" id="update-account">Update</button>
+            <p>Already have an account? <a href="#" id="show-signin">Sign in now.</a></p>
+        </form>
+    </section>
+    <section id="recover-section" style="display: none;">
+        <h2>Password Recovery</h2>
+        <form id="recover-form">
+            <div>
+                <label for="recover-email">Email</label>
+                <input type="email" id="recover-email" required>
+            </div>
+            <div>
+                <label for="new-password">New Password</label>
+                <input type="password" id="new-password" required>
+            </div>
+            <button type="submit">Reset Password</button>
+            <p><a href="#" id="back-to-signin">Back to Sign In</a></p>
+        </form>
+    </section>
+</main>
+<footer>
+    <p>© 2025 MovieSphere, Inc. All rights reserved.</p>
+</footer>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const signinForm = document.getElementById('signin-form');
+        const signupForm = document.getElementById('signup-form');
+        const recoverForm = document.getElementById('recover-form');
+        const showSignup = document.getElementById('show-signup');
+        const showSignin = document.getElementById('show-signin');
+        const recoverPassword = document.getElementById('recover-password');
+        const backToSignin = document.getElementById('back-to-signin');
+        const deleteAccount = document.getElementById('delete-account');
+        const updateAccount = document.getElementById('update-account');
+        const signinSection = document.getElementById('signin-section');
+        const signupSection = document.getElementById('signup-section');
+        const recoverSection = document.getElementById('recover-section');
+
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            signinSection.style.display = 'none';
+            signupSection.style.display = 'block';
+        });
+
+        showSignin.addEventListener('click', (e) => {
+            e.preventDefault();
+            signupSection.style.display = 'none';
+            signinSection.style.display = 'block';
+        });
+
+        recoverPassword.addEventListener('click', (e) => {
+            e.preventDefault();
+            signinSection.style.display = 'none';
+            recoverSection.style.display = 'block';
+        });
+
+        backToSignin.addEventListener('click', (e) => {
+            e.preventDefault();
+            recoverSection.style.display = 'none';
+            signinSection.style.display = 'block';
+        });
+
+        signinForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/signin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const result = await response.text();
+                alert(result);
+            } catch (error) {
+                alert('Error during sign-in');
+            }
+        });
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('signup-fullname').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, fullName, password, confirmPassword })
+                });
+                const result = await response.text();
+                alert(result);
+            } catch (error) {
+                alert('Error during sign-up');
+            }
+        });
+
+        recoverForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('recover-email').value;
+            const password = document.getElementById('new-password').value;
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/recover', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const result = await response.text();
+                alert(result);
+            } catch (error) {
+                alert('Error during password recovery');
+            }
+        });
+
+        deleteAccount.addEventListener('click', async () => {
+            const email = document.getElementById('signup-email').value;
+            try {
+                const response = await fetch(`http://localhost:8080/api/auth/delete/${email}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.text();
+                alert(result);
+            } catch (error) {
+                alert('Error during account deletion');
+            }
+        });
+
+        updateAccount.addEventListener('click', async () => {
+            const fullName = document.getElementById('signup-fullname').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/update', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, fullName, password })
+                });
+                const result = await response.text();
+                alert(result);
+            } catch (error) {
+                alert('Error during account update');
+            }
+        });
+
+        document.querySelectorAll('.toggle-password').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const input = toggle.previousElementSibling;
+                input.type = input.type === 'password' ? 'text' : 'password';
+            });
+        });
+    });
+</script>
+</body>
+</html>
