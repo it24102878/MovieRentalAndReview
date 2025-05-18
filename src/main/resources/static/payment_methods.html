@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Methods</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="css/dark-theme.css" rel="stylesheet">
+    <style>
+        .payment-header {
+            background: linear-gradient(90deg, #990000, #ff3333);
+            padding: 2rem;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 2rem;
+        }
+
+        .payment-card {
+            border: 1px solid #333;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            background-color: #121212;
+        }
+
+        .payment-card.selected {
+            border-color: #ff3333;
+            background-color: #1a1a1a;
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #ff3333;
+        }
+
+        /* Override text colors for better visibility */
+        .text-gray-600 {
+            color: #cccccc !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container-fluid p-0">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="#">University Portal</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="user_movies.html">Movie Catalog</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">Payment Methods</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container mt-4">
+            <div class="payment-header">
+                <h1>Select Payment Method</h1>
+                <p>Choose how you'd like to pay for your movie rental</p>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div id="payment-methods-container">
+                        <div class="payment-card" data-method="credit_card">
+                            <div class="payment-icon text-blue-500">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold">Credit Card</h3>
+                            <p class="text-gray-600">Pay securely with your credit card</p>
+                        </div>
+
+                        <div class="payment-card" data-method="paypal">
+                            <div class="payment-icon text-blue-700">
+                                <i class="fab fa-paypal"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold">PayPal</h3>
+                            <p class="text-gray-600">Pay with your PayPal account</p>
+                        </div>
+
+                        <div class="payment-card" data-method="bank_transfer">
+                            <div class="payment-icon text-green-600">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold">Bank Transfer</h3>
+                            <p class="text-gray-600">Pay directly from your bank account</p>
+                        </div>
+
+                        <div class="payment-card" data-method="apple_pay">
+                            <div class="payment-icon text-gray-800">
+                                <i class="fab fa-apple-pay"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold">Apple Pay</h3>
+                            <p class="text-gray-600">Pay with Apple Pay</p>
+                        </div>
+
+                        <div class="payment-card" data-method="google_pay">
+                            <div class="payment-icon text-red-500">
+                                <i class="fab fa-google-pay"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold">Google Pay</h3>
+                            <p class="text-gray-600">Pay with Google Pay</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-xl font-semibold mb-4">Payment Summary</h3>
+                        <div class="mb-4">
+                            <p class="text-gray-600">Movie:</p>
+                            <p class="font-semibold" id="movie-title">Loading...</p>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-gray-600">Amount:</p>
+                            <p class="font-semibold">$5.99</p>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-gray-600">Selected Payment Method:</p>
+                            <p class="font-semibold" id="selected-method">None selected</p>
+                        </div>
+                        <button id="pay-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full" disabled>
+                            Complete Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get movie ID and user name from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('movieId');
+            const userName = urlParams.get('userName');
+
+            if (!movieId || !userName) {
+                showAlert('Missing movie ID or user name. Please go back and try again.', 'danger');
+                return;
+            }
+
+            // Fetch movie details
+            fetchMovieDetails(movieId);
+
+            // Set up payment method selection
+            setupPaymentMethodSelection();
+
+            // Set up payment button
+            document.getElementById('pay-button').addEventListener('click', () => {
+                processPayment(movieId, userName);
+            });
+        });
+
+        async function fetchMovieDetails(movieId) {
+            try {
+                const response = await fetch(`/api/movies/${movieId}`);
+                if (!response.ok) throw new Error('Failed to load movie details');
+                const movie = await response.json();
+                document.getElementById('movie-title').textContent = movie.title;
+            } catch (error) {
+                console.error('Error fetching movie details:', error);
+                document.getElementById('movie-title').textContent = 'Unknown Movie';
+            }
+        }
+
+        function setupPaymentMethodSelection() {
+            const paymentCards = document.querySelectorAll('.payment-card');
+            paymentCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Remove selected class from all cards
+                    paymentCards.forEach(c => c.classList.remove('selected'));
+
+                    // Add selected class to clicked card
+                    card.classList.add('selected');
+
+                    // Update selected method text
+                    const method = card.dataset.method;
+                    const methodName = card.querySelector('h3').textContent;
+                    document.getElementById('selected-method').textContent = methodName;
+
+                    // Enable pay button
+                    document.getElementById('pay-button').disabled = false;
+                });
+            });
+        }
+
+        async function processPayment(movieId, userName) {
+            const selectedCard = document.querySelector('.payment-card.selected');
+            if (!selectedCard) {
+                showAlert('Please select a payment method', 'warning');
+                return;
+            }
+
+            const paymentMethod = selectedCard.dataset.method;
+            const amount = 5.99; // Fixed amount for movie rental
+
+            try {
+                const response = await fetch(`/api/payments/process/${movieId}?userName=${encodeURIComponent(userName)}&paymentMethod=${encodeURIComponent(paymentMethod)}&amount=${amount}`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) throw new Error('Payment processing failed');
+
+                showAlert('Payment successful! Redirecting to movie catalog...', 'success');
+
+                // Redirect back to movie catalog after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'user_movies.html';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error processing payment:', error);
+                showAlert('Error processing payment: ' + error.message, 'danger');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOVIESPHERE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="css/dark-theme.css" rel="stylesheet">
+    <style>
+        /* Additional custom styles that complement the dark theme */
+        .feedback-action-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .feedback-card:hover .feedback-action-buttons {
+            opacity: 1;
+        }
+
+        .feedback-action-buttons .btn {
+            margin-left: 5px;
+        }
+
+        /* Ensure the hidden class works properly */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Profile picture container styling */
+        #profilePicContainer, #navProfilePicContainer {
+            background-color: #333 !important;
+        }
+
+        /* Override Bootstrap's default focus styles */
+        .btn:focus, .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(255, 51, 51, 0.25) !important;
+        }
+
+        /* Ensure toggle password is visible */
+        .toggle-password {
+            color: #ffffff;
+            cursor: pointer;
+            position: relative;
+            float: right;
+            margin-top: -30px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+<div class="container-fluid p-0">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <div class="d-flex justify-content-center align-items-center w-100">
+                <!-- User Profile Icon -->
+                <div class="me-3">
+                    <a href="#" id="userProfileBtn" class="text-white" data-bs-toggle="modal" data-bs-target="#userProfileModal">
+                        <div id="navProfilePicContainer" style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background-color: #343a40; display: flex; justify-content: center; align-items: center;">
+                            <img id="navProfilePicPreview" src="" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            <i id="navDefaultProfileIcon" class="fas fa-user-circle fa-2x"></i>
+                        </div>
+                    </a>
+                </div>
+                <a class="navbar-brand" href="#">MOVIESPHERE</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="feedbackTabBtn">REVIEWS</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="movieTabBtn">Movies</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Feedback System Tab -->
+        <div id="feedbackSystemTab" class="hidden">
+            <div class="feedback-header">
+                <h1>Movie review System</h1>
+                <p>Share your review about Movies</p>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <button class="feedback-btn-primary btn mb-3" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+                <i class="fas fa-plus"></i> Add Review
+            </button>
+
+            <div id="feedback-container">
+                <div class="feedback-spinner-border spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movie Catalog Tab -->
+        <div id="movieCatalogTab">
+            <!-- Hero Banner for Featured Movie -->
+            <div id="heroBanner" class="hero-banner hidden">
+                <div class="hero-content">
+                    <h1 id="heroTitle" class="hero-title"></h1>
+                    <p id="heroDescription" class="hero-description"></p>
+                    <button id="heroRentBtn" class="btn">Rent Now</button>
+                </div>
+            </div>
+
+            <h1 class="text-4xl font-bold mb-8 text-center text-yellow-400">Movie Catalog</h1>
+
+            <div id="loading" class="text-center text-gray-400">Loading movies...</div>
+            <div id="moviesContainer" class="hidden">
+                <div class="netflix-row">
+                    <h2 class="netflix-row-title">Popular Movies</h2>
+                    <div class="netflix-row-content">
+                        <div id="moviesGrid" class="flex space-x-6">
+                            <!-- Movie cards will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content feedback-modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feedbackModalLabel">Add review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <input type="hidden" id="feedbackId">
+                    <div class="mb-3">
+                        <label for="studentName" class="form-label">User Name</label>
+                        <input type="text" class="form-control" id="studentName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="courseName" class="form-label">Movie Name</label>
+                        <input type="text" class="form-control" id="courseName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating</label>
+                        <select class="form-select" id="rating" required>
+                            <option value="">Select rating</option>
+                            <option value="1">1 Star</option>
+                            <option value="2">2 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="5">5 Stars</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comments" class="form-label">Comments</label>
+                        <textarea class="form-control" id="comments" rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="btn feedback-btn-primary">Save Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content feedback-modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this feedback?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Profile Modal -->
+<div class="modal fade" id="userProfileModal" tabindex="-1" aria-labelledby="userProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content feedback-modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userProfileModalLabel">User Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="userProfileForm">
+                    <div class="mb-3 text-center">
+                        <div id="profilePicContainer" class="mx-auto mb-3" style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background-color: #e9ecef; display: flex; justify-content: center; align-items: center;">
+                            <img id="profilePicPreview" src="" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            <i id="defaultProfileIcon" class="fas fa-user-circle fa-5x" style="color: #6c757d;"></i>
+                        </div>
+                        <label for="profilePicUpload" class="btn btn-sm btn-outline-primary mt-2">
+                            <i class="fas fa-upload"></i> Upload Profile Picture
+                        </label>
+                        <input type="file" id="profilePicUpload" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="profileEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="profileEmail" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profileFullName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="profileFullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profilePassword" class="form-label">New Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" id="profilePassword">
+                        <span class="toggle-password" onclick="togglePassword('profilePassword')">👁️</span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profileConfirmPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="profileConfirmPassword">
+                        <span class="toggle-password" onclick="togglePassword('profileConfirmPassword')">👁️</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn feedback-btn-primary">Update Profile</button>
+                        <button type="button" class="btn btn-danger" id="deleteProfileBtn">Delete Profile</button>
+                    </div>
+                </form>
+                <p class="error mt-3" id="profile-error"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Profile Confirmation Modal -->
+<div class="modal fade" id="deleteProfileConfirmModal" tabindex="-1" aria-labelledby="deleteProfileConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content feedback-modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteProfileConfirmModalLabel">Confirm Delete Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete your profile? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteProfile">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Movie Rent Modal -->
+<div id="rentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-gray-800">
+        <h3 class="text-lg font-bold mb-4 text-white">Rent Movie</h3>
+        <form id="rentForm">
+            <input type="hidden" id="movieId">
+            <div class="mb-4">
+                <label class="block text-gray-300 text-sm font-bold mb-2" for="userName">Your Name</label>
+                <input type="text" id="userName" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-white" required>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
+                    Confirm Rental
+                </button>
+                <button type="button" id="cancelRentBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Tab Switching
+    document.getElementById('feedbackTabBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('feedbackSystemTab').classList.remove('hidden');
+        document.getElementById('movieCatalogTab').classList.add('hidden');
+        this.classList.add('active');
+        document.getElementById('movieTabBtn').classList.remove('active');
+    });
+
+    document.getElementById('movieTabBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('feedbackSystemTab').classList.add('hidden');
+        document.getElementById('movieCatalogTab').classList.remove('hidden');
+        this.classList.add('active');
+        document.getElementById('feedbackTabBtn').classList.remove('active');
+        // Load movies if not already loaded
+        if (document.getElementById('moviesGrid').children.length === 0) {
+            fetchMovies();
+        }
+    });
+
+    // Feedback System Code
+    const FEEDBACK_API_URL = '/api/feedback';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadFeedbacks();
+        setupMovieEventListeners();
+        setupUserProfileEventListeners();
+
+        // Load movies when page loads
+        fetchMovies();
+
+        // Get current user email from localStorage
+        const currentUserEmail = localStorage.getItem('currentUserEmail');
+        if (currentUserEmail) {
+            document.getElementById('profileEmail').value = currentUserEmail;
+
+            // Load profile picture in navigation bar
+            loadNavProfilePicture(currentUserEmail);
+        }
+    });
+
+    // Function to load profile picture in navigation bar
+    function loadNavProfilePicture(email) {
+        if (!email) return;
+
+        const profilePic = localStorage.getItem('profilePic_' + email);
+        const navProfilePicPreview = document.getElementById('navProfilePicPreview');
+        const navDefaultProfileIcon = document.getElementById('navDefaultProfileIcon');
+
+        if (profilePic) {
+            navProfilePicPreview.src = profilePic;
+            navProfilePicPreview.style.display = 'block';
+            navDefaultProfileIcon.style.display = 'none';
+        } else {
+            navProfilePicPreview.style.display = 'none';
+            navDefaultProfileIcon.style.display = 'block';
+        }
+    }
+
+    async function loadFeedbacks() {
+        const container = document.getElementById('feedback-container');
+        container.innerHTML = '<div class="feedback-spinner-border spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+
+        try {
+            // Get the current user's name from the form or use a default
+            const currentUser = document.getElementById('studentName')?.value || localStorage.getItem('currentUser') || '';
+
+            // Store the current user in localStorage for future use
+            if (currentUser) {
+                localStorage.setItem('currentUser', currentUser);
+            }
+
+            // Use the user-specific endpoint if we have a user, otherwise fall back to all feedbacks
+            const url = currentUser ? `${FEEDBACK_API_URL}/user/${encodeURIComponent(currentUser)}` : FEEDBACK_API_URL;
+            const response = await fetch(url);
+
+            if (!response.ok) throw new Error('Failed to load feedbacks');
+            const feedbacks = await response.json();
+            container.innerHTML = feedbacks.length === 0 ? '<p>No feedback yet.</p>' : '';
+            feedbacks.forEach(feedback => {
+                const card = document.createElement('div');
+                card.className = 'feedback-card card';
+                card.innerHTML = `
+                        <div class="feedback-card-header card-header">${feedback.courseName}</div>
+                        <div class="card-body">
+                            <h5 class="card-title">${feedback.studentName}</h5>
+                            <p class="card-text stars">${'★'.repeat(feedback.rating)}${'☆'.repeat(5 - feedback.rating)} ${feedback.rating}/5</p>
+                            <p class="card-text">${feedback.comments || 'No comments'}</p>
+                            <p class="card-text"><small class="text-muted">Last updated: ${new Date(feedback.updatedAt).toLocaleString()}</small></p>
+                            <div class="feedback-action-buttons action-buttons">
+                                <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${feedback.id}"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${feedback.id}"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                container.appendChild(card);
+            });
+
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.id;
+                    try {
+                        const response = await fetch(`${FEEDBACK_API_URL}/${id}`);
+                        if (!response.ok) throw new Error('Failed to load feedback');
+                        const feedback = await response.json();
+                        document.getElementById('feedbackId').value = feedback.id;
+                        document.getElementById('studentName').value = feedback.studentName;
+                        document.getElementById('courseName').value = feedback.courseName;
+                        document.getElementById('rating').value = feedback.rating;
+                        document.getElementById('comments').value = feedback.comments || '';
+                        document.getElementById('feedbackModalLabel').textContent = 'Edit Feedback';
+                        new bootstrap.Modal(document.getElementById('feedbackModal')).show();
+                    } catch (error) {
+                        showAlert('Error loading feedback: ' + error.message, 'danger');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                    modal.show();
+                    document.getElementById('confirmDelete').onclick = async () => {
+                        try {
+                            const response = await fetch(`${FEEDBACK_API_URL}/${id}`, { method: 'DELETE' });
+                            if (!response.ok) throw new Error('Failed to delete feedback');
+                            showAlert('Feedback deleted successfully!', 'success');
+                            loadFeedbacks();
+                            modal.hide();
+                        } catch (error) {
+                            showAlert('Error deleting feedback: ' + error.message, 'danger');
+                        }
+                    };
+                });
+            });
+        } catch (error) {
+            container.innerHTML = '<p>Error loading feedbacks.</p>';
+            showAlert('Error loading feedbacks: ' + error.message, 'danger');
+        }
+    }
+
+    document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('feedbackId').value;
+        const studentName = document.getElementById('studentName').value;
+
+        // Store the current user in localStorage for future use
+        if (studentName) {
+            localStorage.setItem('currentUser', studentName);
+        }
+
+        const feedback = {
+            studentName: studentName,
+            courseName: document.getElementById('courseName').value,
+            rating: parseInt(document.getElementById('rating').value),
+            comments: document.getElementById('comments').value,
+            userId: studentName // Use studentName as userId to track which user added the feedback
+        };
+        if (id) {
+            feedback.id = parseInt(id);
+        }
+
+        try {
+            const response = await fetch(FEEDBACK_API_URL, {
+                method: id ? 'POST' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(feedback)
+            });
+            if (!response.ok) throw new Error('Failed to save feedback');
+            showAlert(id ? 'Feedback updated successfully!' : 'Feedback added successfully!', 'success');
+            loadFeedbacks();
+            bootstrap.Modal.getInstance(document.getElementById('feedbackModal')).hide();
+            document.getElementById('feedbackForm').reset();
+            document.getElementById('feedbackId').value = '';
+        } catch (error) {
+            showAlert('Error saving feedback: ' + error.message, 'danger');
+        }
+    });
+
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alert-container');
+        const alert = document.createElement('div');
+        alert.className = `feedback-alert-dismissible alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+        alertContainer.appendChild(alert);
+        setTimeout(() => alert.remove(), 5000);
+    }
+
+    // Movie Catalog Code
+    const MOVIE_API_URL = '/api/movies';
+
+    function setupMovieEventListeners() {
+        document.getElementById('cancelRentBtn').addEventListener('click', closeRentModal);
+        document.getElementById('rentForm').addEventListener('submit', handleRentSubmit);
+    }
+
+    async function fetchMovies() {
+        try {
+            const response = await fetch(MOVIE_API_URL);
+            const movies = await response.json();
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('moviesContainer').classList.remove('hidden');
+
+            // Set up hero banner with the first movie if available
+            if (movies.length > 0) {
+                setupHeroBanner(movies[0]);
+            }
+
+            renderMovies(movies);
+        } catch (error) {
+            console.error('Error fetching movies:', error);
+        }
+    }
+
+    function setupHeroBanner(movie) {
+        const heroBanner = document.getElementById('heroBanner');
+        const heroTitle = document.getElementById('heroTitle');
+        const heroDescription = document.getElementById('heroDescription');
+        const heroRentBtn = document.getElementById('heroRentBtn');
+
+        // Set background image
+        if (movie.imageUrl) {
+            heroBanner.style.backgroundImage = `linear-gradient(to top, rgba(20, 20, 20, 1) 0%, rgba(20, 20, 20, 0.7) 50%, rgba(20, 20, 20, 0.4) 100%), url('${movie.imageUrl}')`;
+        } else {
+            heroBanner.style.backgroundColor = '#141414';
+        }
+
+        // Set content
+        heroTitle.textContent = movie.title;
+        heroDescription.textContent = movie.description || 'No description available';
+
+        // Set up rent button
+        heroRentBtn.onclick = () => openRentModal(movie.id);
+
+        // Show the banner
+        heroBanner.classList.remove('hidden');
+    }
+
+    function renderMovies(movies) {
+        const grid = document.getElementById('moviesGrid');
+        grid.innerHTML = '';
+        movies.forEach(movie => {
+            const card = document.createElement('div');
+            card.className = 'movie-card flex-shrink-0 w-48 bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300';
+            card.innerHTML = `
+                    <div class="w-full h-72 relative">
+                        ${movie.imageUrl ? `<img src="${movie.imageUrl}" alt="${movie.title}" class="w-full h-full object-cover">` : '<div class="w-full h-full bg-gray-700 flex items-center justify-center text-gray-400">No Image</div>'}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end">
+                            <div class="p-3 w-full">
+                                <h3 class="text-lg font-semibold text-white">${movie.title}</h3>
+                                <p class="text-sm text-gray-300">${movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : 'N/A'}</p>
+                                <button onclick="openRentModal(${movie.id})" class="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded w-full">Rent</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            grid.appendChild(card);
+        });
+    }
+
+    function openRentModal(id) {
+        document.getElementById('movieId').value = id;
+        document.getElementById('rentModal').classList.remove('hidden');
+    }
+
+    function closeRentModal() {
+        document.getElementById('rentModal').classList.add('hidden');
+        document.getElementById('rentForm').reset();
+    }
+
+    async function handleRentSubmit(event) {
+        event.preventDefault();
+        const movieId = document.getElementById('movieId').value;
+        const userName = document.getElementById('userName').value;
+
+        // Redirect to payment methods page instead of directly renting
+        window.location.href = `payment_methods.html?movieId=${movieId}&userName=${encodeURIComponent(userName)}`;
+    }
+
+    // User Profile Functions
+    function setupUserProfileEventListeners() {
+        // Open profile modal and load user data
+        document.getElementById('userProfileBtn').addEventListener('click', loadUserProfile);
+
+        // Update profile form submission
+        document.getElementById('userProfileForm').addEventListener('submit', updateUserProfile);
+
+        // Delete profile button click
+        document.getElementById('deleteProfileBtn').addEventListener('click', () => {
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteProfileConfirmModal'));
+            deleteModal.show();
+        });
+
+        // Confirm delete profile button click
+        document.getElementById('confirmDeleteProfile').addEventListener('click', deleteUserProfile);
+
+        // Profile picture upload
+        document.getElementById('profilePicUpload').addEventListener('change', handleProfilePicUpload);
+    }
+
+    // Handle profile picture upload
+    function handleProfilePicUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Check file type
+        if (!file.type.match('image.*')) {
+            showAlert('Please select an image file', 'danger');
+            return;
+        }
+
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            showAlert('Image size should be less than 5MB', 'danger');
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            // Display the image in profile modal
+            const profilePicPreview = document.getElementById('profilePicPreview');
+            const defaultProfileIcon = document.getElementById('defaultProfileIcon');
+
+            profilePicPreview.src = e.target.result;
+            profilePicPreview.style.display = 'block';
+            defaultProfileIcon.style.display = 'none';
+
+            // Update navigation bar profile picture
+            const navProfilePicPreview = document.getElementById('navProfilePicPreview');
+            const navDefaultProfileIcon = document.getElementById('navDefaultProfileIcon');
+
+            navProfilePicPreview.src = e.target.result;
+            navProfilePicPreview.style.display = 'block';
+            navDefaultProfileIcon.style.display = 'none';
+
+            // Save to localStorage
+            const email = document.getElementById('profileEmail').value;
+            if (email) {
+                localStorage.setItem('profilePic_' + email, e.target.result);
+            }
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    async function loadUserProfile() {
+        const email = document.getElementById('profileEmail').value;
+        if (!email) {
+            showAlert('User email not found. Please sign in again.', 'danger');
+            return;
+        }
+
+        try {
+            // Load profile picture from localStorage if available
+            const profilePic = localStorage.getItem('profilePic_' + email);
+            const profilePicPreview = document.getElementById('profilePicPreview');
+            const defaultProfileIcon = document.getElementById('defaultProfileIcon');
+
+            if (profilePic) {
+                profilePicPreview.src = profilePic;
+                profilePicPreview.style.display = 'block';
+                defaultProfileIcon.style.display = 'none';
+            } else {
+                profilePicPreview.style.display = 'none';
+                defaultProfileIcon.style.display = 'block';
+            }
+
+            const response = await fetch(`/api/auth/users`);
+            if (!response.ok) throw new Error('Failed to load user data');
+
+            const users = await response.json();
+            const currentUser = users.find(user => user.email === email);
+
+            if (currentUser) {
+                document.getElementById('profileFullName').value = currentUser.fullName || '';
+                // Don't populate password fields for security reasons
+            } else {
+                showAlert('User not found. Please sign in again.', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error loading user profile: ' + error.message, 'danger');
+        }
+    }
+
+    async function updateUserProfile(event) {
+        event.preventDefault();
+        const oldEmail = localStorage.getItem('currentUserEmail');
+        const email = document.getElementById('profileEmail').value;
+        const fullName = document.getElementById('profileFullName').value;
+        const password = document.getElementById('profilePassword').value;
+        const confirmPassword = document.getElementById('profileConfirmPassword').value;
+        const error = document.getElementById('profile-error');
+
+        if (!email) {
+            error.textContent = 'Email is required';
+            return;
+        }
+
+        if (!fullName) {
+            error.textContent = 'Full name is required';
+            return;
+        }
+
+        if (password && password !== confirmPassword) {
+            error.textContent = 'Passwords do not match';
+            return;
+        }
+
+        try {
+            // If password is empty, get the current password from the server
+            let currentPassword = password;
+            if (!currentPassword) {
+                const response = await fetch(`/api/auth/users`);
+                if (!response.ok) throw new Error('Failed to load user data');
+
+                const users = await response.json();
+                const currentUser = users.find(user => user.email === oldEmail);
+                if (currentUser) {
+                    currentPassword = currentUser.password;
+                } else {
+                    error.textContent = 'User not found';
+                    return;
+                }
+            }
+
+            const userData = {
+                email: email,
+                fullName: fullName,
+                password: currentPassword,
+                confirmPassword: currentPassword,
+                isAdmin: false
+            };
+
+            const updateResponse = await fetch('/api/auth/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
+            if (!updateResponse.ok) {
+                const errorText = await updateResponse.text();
+                throw new Error(errorText);
+            }
+
+            // Handle profile picture if email changed
+            if (oldEmail && oldEmail !== email) {
+                const profilePic = localStorage.getItem('profilePic_' + oldEmail);
+                if (profilePic) {
+                    // Save profile picture with new email key
+                    localStorage.setItem('profilePic_' + email, profilePic);
+                    // Remove old profile picture
+                    localStorage.removeItem('profilePic_' + oldEmail);
+                }
+            }
+
+            // Store updated user email in localStorage
+            localStorage.setItem('currentUserEmail', email);
+
+            // Show success message and close modal
+            showAlert('Profile updated successfully!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('userProfileModal')).hide();
+
+            // Clear password fields
+            document.getElementById('profilePassword').value = '';
+            document.getElementById('profileConfirmPassword').value = '';
+            error.textContent = '';
+
+            // Update navigation bar profile picture
+            loadNavProfilePicture(email);
+        } catch (e) {
+            error.textContent = 'Error updating profile: ' + e.message;
+        }
+    }
+
+    async function deleteUserProfile() {
+        const email = document.getElementById('profileEmail').value;
+        if (!email) {
+            showAlert('User email not found. Please sign in again.', 'danger');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/auth/delete/${encodeURIComponent(email)}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
+
+            // Clear user data from localStorage
+            localStorage.removeItem('currentUserEmail');
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('profilePic_' + email);
+
+            // Show success message and redirect to authentication page
+            alert('Profile deleted successfully. You will be redirected to the login page.');
+            window.location.href = 'authentication.html';
+        } catch (error) {
+            showAlert('Error deleting profile: ' + error.message, 'danger');
+            bootstrap.Modal.getInstance(document.getElementById('deleteProfileConfirmModal')).hide();
+        }
+    }
+</script>
+</body>
+</html>

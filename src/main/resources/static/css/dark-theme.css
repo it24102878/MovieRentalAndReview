@@ -1,0 +1,389 @@
+/* Netflix-inspired Dark Theme CSS for MovieSphere Application */
+
+/* Base Styles */
+body {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+/* Container Styles */
+.container, .container-fluid {
+    padding: 20px;
+    max-width: 1800px;
+}
+
+/* Card Styles */
+.card, .form-container, .modal-content, .feedback-card {
+    background-color: #000000;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.card:hover, .form-container:hover, .feedback-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+}
+
+.card-header, .feedback-card-header {
+    background-color: #000000;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+    padding: 15px;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Form Styles */
+input, textarea, select, .form-control {
+    background-color: #333333;
+    border: none;
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus, .form-control:focus {
+    background-color: #454545;
+    box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.5);
+    outline: none;
+}
+
+label {
+    color: #ffffff;
+    margin-bottom: 8px;
+    display: block;
+    font-weight: 500;
+}
+
+/* Button Styles */
+button, .btn, .feedback-btn-primary {
+    background-color: #ff0000;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover, .btn:hover, .feedback-btn-primary:hover {
+    background-color: #cc0000;
+    transform: scale(1.05);
+}
+
+.btn-secondary, button[type="button"] {
+    background-color: #ff0000;
+}
+
+.btn-secondary:hover, button[type="button"]:hover {
+    background-color: #cc0000;
+}
+
+/* Navigation Styles */
+.navbar {
+    background-color: #000000;
+    border-bottom: none;
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.navbar-brand {
+    color: #ff0000;
+    font-weight: bold;
+    font-size: 28px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.nav-link {
+    color: #e5e5e5;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    margin: 0 15px;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: #ffffff;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: #000000;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+th {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid #333;
+}
+
+tbody tr {
+    background-color: #000000;
+    transition: background-color 0.3s ease;
+}
+
+tbody tr:hover {
+    background-color: #333333;
+}
+
+/* Modal Styles */
+.modal-header {
+    background-color: #000000;
+    color: #ffffff;
+    border-bottom: 1px solid #333;
+    padding: 15px 20px;
+}
+
+.modal-body {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 20px;
+}
+
+.modal-footer {
+    background-color: #000000;
+    border-top: 1px solid #333;
+    padding: 15px 20px;
+}
+
+/* Movie Card Styles */
+.movie-card {
+    background-color: #000000;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 10px;
+    position: relative;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+
+.movie-card img {
+    transition: transform 0.3s ease;
+}
+
+.movie-card:hover img {
+    transform: scale(1.1);
+}
+
+/* Feedback System Styles */
+.feedback-header {
+    background-color: #ff0000;
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2rem;
+}
+
+.stars {
+    color: #ff0000;
+}
+
+/* Animation Effects */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.slide-in {
+    animation: slideIn 0.5s ease forwards;
+}
+
+/* Utility Classes */
+.text-red {
+    color: #ff0000;
+}
+
+.bg-dark {
+    background-color: #000000 !important;
+}
+
+.error {
+    color: #ff0000;
+}
+
+/* Tailwind Overrides */
+.bg-blue-500 {
+    background-color: #ff0000 !important;
+}
+
+.bg-blue-700, .hover\:bg-blue-700:hover {
+    background-color: #cc0000 !important;
+}
+
+.bg-gray-100 {
+    background-color: #000000 !important;
+}
+
+.bg-gray-800, .bg-gray-700 {
+    background-color: #000000 !important;
+}
+
+.bg-gray-50 {
+    background-color: #000000 !important;
+}
+
+.bg-white {
+    background-color: #000000 !important;
+}
+
+.text-gray-700, .text-gray-500, .text-gray-400, .text-gray-300 {
+    color: #ffffff !important;
+}
+
+.text-yellow-400 {
+    color: #ff0000 !important;
+}
+
+.bg-green-500, .bg-yellow-500, .bg-red-500 {
+    background-color: #ff0000 !important;
+}
+
+.hover\:bg-green-700:hover, .hover\:bg-yellow-700:hover, .hover\:bg-red-700:hover {
+    background-color: #cc0000 !important;
+}
+
+/* Netflix-style Row Layout */
+.netflix-row {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+.netflix-row-title {
+    font-size: 1.4vw;
+    line-height: 1.25vw;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.netflix-row-content {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px 0;
+    scroll-behavior: smooth;
+}
+
+.netflix-row-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* Netflix-style Hero Banner */
+.hero-banner {
+    position: relative;
+    height: 80vh;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 40px;
+}
+
+.hero-content {
+    position: absolute;
+    bottom: 20%;
+    left: 5%;
+    max-width: 500px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.hero-description {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Netflix-style Login/Signup */
+.auth-container {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 60px 68px 40px;
+    background-color: #000000;
+    border-radius: 4px;
+}
+
+.auth-form input {
+    height: 50px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+
+.auth-form button {
+    height: 50px;
+    font-size: 16px;
+    border-radius: 4px;
+    font-weight: 700;
+    margin: 24px 0 12px;
+}
+
+.auth-title {
+    color: #fff;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 28px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
+    .netflix-row-title {
+        font-size: 18px;
+    }
+
+    .auth-container {
+        padding: 40px 30px;
+    }
+}

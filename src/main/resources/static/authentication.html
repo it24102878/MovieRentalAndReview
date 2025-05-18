@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieSphere</title>
+</head>
+<body>
+<div>
+    <h1>MovieSphere</h1>
+</div>
+
+<div>
+    <!-- Sign In -->
+    <div id="signin-form">
+        <h2>Sign In</h2>
+        <form>
+            <input type="email" id="signin-email" placeholder="Email" required>
+            <input type="password" id="signin-password" placeholder="Password" required>
+            <span onclick="togglePassword('signin-password')">👁️</span>
+            <div>
+                <input type="checkbox" id="remember-me">
+                <label for="remember-me">Remember Me</label>
+            </div>
+            <button type="submit" onclick="signIn()">Sign In</button>
+            <p>Need help? <a href="#" onclick="showForm('recover-form')">Reset password</a></p>
+            <p>New to MovieSphere? <a href="#" onclick="showForm('signup-form')">Sign up now</a></p>
+        </form>
+        <button onclick="showForm('admin-form')">Admin Login</button>
+        <p id="signin-error"></p>
+    </div>
+
+    <!-- Admin Login -->
+    <div id="admin-form" hidden>
+        <h2>Admin Login</h2>
+        <form>
+            <input type="email" id="admin-email" placeholder="Admin Email" required>
+            <input type="password" id="admin-password" placeholder="Admin Password" required>
+            <span onclick="togglePassword('admin-password')">👁️</span>
+            <button type="submit" onclick="adminSignIn()">Sign In</button>
+            <p><a href="#" onclick="showForm('signin-form')">Back to User Sign In</a></p>
+        </form>
+        <p id="admin-error"></p>
+    </div>
+
+    <!-- Sign Up -->
+    <div id="signup-form" hidden>
+        <h2>Sign Up</h2>
+        <form>
+            <input type="text" id="signup-fullname" placeholder="Full Name" required>
+            <input type="email" id="signup-email" placeholder="Email" required>
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <span onclick="togglePassword('signup-password')">👁️</span>
+            <input type="password" id="signup-confirm-password" placeholder="Confirm Password" required>
+            <div>
+                <input type="checkbox" id="terms" required>
+                <label for="terms">I agree to the Terms of Service and Privacy Policy</label>
+            </div>
+            <button type="submit" onclick="signUp()">Sign Up</button>
+            <p>Already have an account? <a href="#" onclick="showForm('signin-form')">Sign in now</a></p>
+        </form>
+        <p id="signup-error"></p>
+    </div>
+
+    <!-- Password Recovery -->
+    <div id="recover-form" hidden>
+        <h2>Reset Password</h2>
+        <form>
+            <input type="email" id="recover-email" placeholder="Email" required>
+            <input type="password" id="recover-password" placeholder="New Password" required>
+            <button type="submit" onclick="recoverPassword()">Reset Password</button>
+            <p><a href="#" onclick="showForm('signin-form')">Back to Sign In</a></p>
+        </form>
+        <p id="recover-error"></p>
+    </div>
+</div>
+
+<footer>
+    © 2025 MovieSphere, Inc. All rights reserved.
+</footer>
+
+<script>
+    // Load remembered email when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        const rememberedEmail = localStorage.getItem('rememberedEmail');
+        if (rememberedEmail) {
+            document.getElementById('signin-email').value = rememberedEmail;
+            document.getElementById('remember-me').checked = true;
+        }
+    });
+
+    function showForm(formId) {
+        document.querySelectorAll('.form-container').forEach(form => form.style.display = 'none');
+        document.getElementById(formId).style.display = 'block';
+    }
+
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    async function signIn() {
+        event.preventDefault();
+        const email = document.getElementById('signin-email').value;
+        const password = document.getElementById('signin-password').value;
+        const error = document.getElementById('signin-error');
+
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, fullName: '', confirmPassword: '', isAdmin: false })
+            });
+            const result = await response.text();
+            if (response.ok) {
+                // Store user email in localStorage for profile functionality
+                localStorage.setItem('currentUserEmail', email);
+
+                // Remember me functionality
+                if (document.getElementById('remember-me').checked) {
+                    localStorage.setItem('rememberedEmail', email);
+                } else {
+                    localStorage.removeItem('rememberedEmail');
+                }
+
+                window.location.href = result; // Redirect to user_movies.html or admin.html
+            } else {
+                error.textContent = result;
+            }
+        } catch (e) {
+            error.textContent = 'Error: ' + e.message;
+        }
+    }
+
+    async function adminSignIn() {
+        event.preventDefault();
+        const email = document.getElementById('admin-email').value;
+        const password = document.getElementById('admin-password').value;
+        const error = document.getElementById('admin-error');
+
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, fullName: '', confirmPassword: '', isAdmin: true })
+            });
+            const result = await response.text();
+            if (response.ok) {
+                // Store admin email in localStorage for profile functionality
+                localStorage.setItem('currentUserEmail', email);
+
+                window.location.href = result; // Should redirect to admin.html
+            } else {
+                error.textContent = result;
+            }
+        } catch (e) {
+            error.textContent = 'Error: ' + e.message;
+        }
+    }
+
+    async function signUp() {
+        event.preventDefault();
+        const fullName = document.getElementById('signup-fullname').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const confirmPassword = document.getElementById('signup-confirm-password').value;
+        const error = document.getElementById('signup-error');
+
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, fullName, password, confirmPassword, isAdmin: false })
+            });
+            const result = await response.text();
+            if (response.ok) {
+                showForm('signin-form');
+                alert(result);
+            } else {
+                error.textContent = result;
+            }
+        } catch (e) {
+            error.textContent = 'Error: ' + e.message;
+        }
+    }
+
+    async function recoverPassword() {
+        event.preventDefault();
+        const email = document.getElementById('recover-email').value;
+        const password = document.getElementById('recover-password').value;
+        const error = document.getElementById('recover-error');
+
+        try {
+            const response = await fetch('http://localhost:8080/api/auth/recover', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, fullName: '', confirmPassword: password, isAdmin: false })
+            });
+            const result = await response.text();
+            if (response.ok) {
+                showForm('signin-form');
+                alert(result);
+            } else {
+                error.textContent = result;
+            }
+        } catch (e) {
+            error.textContent = 'Error: ' + e.message;
+        }
+    }
+</script>
+</body>
+</html>

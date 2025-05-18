@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="css/dark-theme.css" rel="stylesheet">
+    <style>
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
+        }
+        .glow-effect {
+            animation: glow 2s infinite;
+        }
+        .hidden {
+            display: none !important;
+        }
+        #loading {
+            font-style: italic;
+        }
+        #error-message {
+            margin-top: 10px;
+        }
+        .bg-gradient-to-r {
+            background-image: linear-gradient(to right, #ff0000, #ff3333) !important;
+        }
+    </style>
+</head>
+<body class="bg-white text-black min-h-screen font-sans">
+<!-- Dashboard Section -->
+<div id="dashboard" class="container mx-auto p-6 fade-in">
+    <h1 class="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-blue-500 to-blue-700 text-transparent bg-clip-text">
+        User Management
+    </h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded-lg shadow-lg card-hover">
+            <h2 class="text-2xl font-semibold mb-4">Add New User</h2>
+            <p class="mb-4">Register a new user account.</p>
+            <button onclick="showSection('user-registration')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded glow-effect">
+                Add User
+            </button>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-lg card-hover">
+            <h2 class="text-2xl font-semibold mb-4">Manage Users</h2>
+            <p class="mb-4">View, edit, and delete user accounts.</p>
+            <button onclick="showSection('user-management'); loadUsers()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded glow-effect">
+                Manage Users
+            </button>
+        </div>
+    </div>
+    <div class="mt-6 text-center">
+        <a href="admin.html" class="bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded inline-block">
+            Back to Admin Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- User Registration Section -->
+<div id="user-registration" class="container mx-auto p-6 hidden fade-in">
+    <h2 class="text-3xl font-bold mb-6 text-center">User Registration</h2>
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <form id="user-register-form">
+            <input type="text" id="user-name" placeholder="Name" class="w-full bg-gray-100 text-black p-3 rounded mb-4" required>
+            <input type="email" id="user-email" placeholder="Email" class="w-full bg-gray-100 text-black p-3 rounded mb-4" required>
+            <input type="password" id="user-password" placeholder="Password" class="w-full bg-gray-100 text-black p-3 rounded mb-4" required>
+            <input type="password" id="user-confirm-password" placeholder="Confirm Password" class="w-full bg-gray-100 text-black p-3 rounded mb-4" required>
+            <div id="user-error-message" class="hidden text-red-500 mb-4"></div>
+            <button type="button" onclick="registerUser()" class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded glow-effect">
+                Register User
+            </button>
+            <button type="button" onclick="navigateBack()" class="w-full bg-gray-200 hover:bg-gray-300 text-black p-3 rounded mt-2">
+                Back
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- User Management Section -->
+<div id="user-management" class="container mx-auto p-6 hidden fade-in">
+    <h2 class="text-3xl font-bold mb-6 text-center">User Management</h2>
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <p id="user-loading" class="hidden">Loading users...</p>
+        <div id="user-error-message-list" class="hidden text-red-500 mb-4"></div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="p-3">Name</th>
+                    <th class="p-3">Email</th>
+                    <th class="p-3">Role</th>
+                    <th class="p-3">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="user-table-body"></tbody>
+            </table>
+        </div>
+        <button onclick="navigateBack()" class="bg-gray-200 hover:bg-gray-300 text-black px-4 py-2 rounded mt-4">
+            Back
+        </button>
+    </div>
+</div>
+
+<script>
+    // Show/hide sections
+    function showSection(sectionId) {
+        console.log(`Navigating to section: ${sectionId}`);
+        document.querySelectorAll('.container').forEach(section => {
+            if (section.id !== sectionId) {
+                section.classList.add('hidden');
+            } else {
+                section.classList.remove('hidden');
+            }
+        });
+        const targetSection = document.getElementById(sectionId);
+        if (!targetSection) {
+            console.error(`Section not found: ${sectionId}`);
+            showSection('dashboard'); // Fallback to dashboard
+        }
+    }
+
+    // Navigate back to dashboard
+    function navigateBack() {
+        console.log('Back button clicked, returning to dashboard');
+        showSection('dashboard');
+        resetForm(); // Reset form only for user-registration
+    }
+
+    // Reset registration form
+    function resetForm() {
+        console.log('Resetting registration form');
+        const form = document.getElementById('user-register-form');
+        if (form) {
+            form.reset();
+        }
+        const errorMessage = document.getElementById('user-error-message');
+        if (errorMessage) {
+            errorMessage.classList.add('hidden');
+            errorMessage.textContent = '';
+        }
+        const registerButton = document.querySelector('#user-register-form button[onclick="registerUser()"]');
+        if (registerButton) {
+            registerButton.textContent = 'Register User';
+            registerButton.onclick = registerUser;
+        }
+    }
+
+    // Show error message
+    function showError(sectionId, message) {
+        let errorMessageId = 'user-error-message';
+        if (sectionId === 'user-management') {
+            errorMessageId = 'user-error-message-list';
+        }
+
+        const errorMessage = document.querySelector(`#${sectionId} #${errorMessageId}`);
+        if (errorMessage) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        } else {
+            alert(message);
+        }
+    }
+
+    // Register a new user
+    function registerUser() {
+        const name = document.getElementById('user-name')?.value.trim();
+        const email = document.getElementById('user-email')?.value.trim();
+        const password = document.getElementById('user-password')?.value.trim();
+        const confirmPassword = document.getElementById('user-confirm-password')?.value.trim();
+
+        if (!name || !email || !password || !confirmPassword) {
+            showError('user-registration', 'Please fill all fields correctly');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showError('user-registration', 'Passwords do not match');
+            return;
+        }
+
+        console.log('Register user request:', { name, email });
+
+        fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, fullName: name, password, confirmPassword, isAdmin: false })
+        })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Registration failed: ${response.status} - ${errorText}`);
+                }
+                return response.text();
+            })
+            .then(data => {
+                alert(`User registered: ${name}`);
+                resetForm();
+                showSection('dashboard');
+            })
+            .catch(error => {
+                console.error('Register user error:', error);
+                showError('user-registration', `Failed to register user: ${error.message}`);
+            });
+    }
+
+    // Load and display all users with retry
+    function loadUsers(retryCount = 0, maxRetries = 2) {
+        const loadingElement = document.getElementById('user-loading');
+        const errorMessage = document.querySelector('#user-management #user-error-message-list');
+        if (loadingElement) {
+            loadingElement.classList.remove('hidden');
+        }
+        if (errorMessage) {
+            errorMessage.classList.add('hidden');
+        }
+
+        console.log(`Fetching users from /api/auth/users (Attempt ${retryCount + 1}/${maxRetries + 1})`);
+
+        fetch('/api/auth/users')
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to fetch users: ${response.status} - ${errorText}`);
+                }
+                return response.json();
+            })
+            .then(users => {
+                const tbody = document.getElementById('user-table-body');
+                if (!tbody) {
+                    throw new Error('User table body not found');
+                }
+                tbody.innerHTML = '';
+                if (!Array.isArray(users) || users.length === 0) {
+                    tbody.innerHTML = '<tr class="border-b border-gray-200"><td colspan="4" class="p-3 text-center">No users found</td></tr>';
+                } else {
+                    users.forEach(user => {
+                        const safeName = user.fullName.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const safeEmail = user.email.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const role = user.isAdmin ? 'Admin' : 'User';
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-gray-200';
+                        row.innerHTML = `
+                                <td class="p-3">${safeName}</td>
+                                <td class="p-3">${safeEmail}</td>
+                                <td class="p-3">${role}</td>
+                                <td class="p-3">
+                                    <button onclick="editUser('${safeEmail}', '${safeName}')" class="bg-yellow-600 hover:bg-yellow-700 text-black px-3 py-1 rounded mr-2">Edit</button>
+                                    <button onclick="deleteUser('${safeEmail}')" class="bg-red-600 hover:bg-red-700 text-black px-3 py-1 rounded">Delete</button>
+                                </td>
+                            `;
+                        tbody.appendChild(row);
+                    });
+                }
+                if (loadingElement) {
+                    loadingElement.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Load users error:', error);
+                if (loadingElement) {
+                    loadingElement.classList.add('hidden');
+                }
+                if (retryCount < maxRetries && error.message.includes('Failed to fetch')) {
+                    console.log(`Retrying fetch users (Attempt ${retryCount + 2})`);
+                    setTimeout(() => loadUsers(retryCount + 1, maxRetries), 1000);
+                } else {
+                    const errorMsg = error.message.includes('Failed to fetch')
+                        ? 'Failed to load users: Backend server may be down or inaccessible'
+                        : `Failed to load users: ${error.message}`;
+                    showError('user-management', errorMsg);
+                }
+            });
+    }
+
+    // Edit user (populates registration form for updating)
+    function editUser(email, name) {
+        showSection('user-registration');
+        const nameInput = document.getElementById('user-name');
+        const emailInput = document.getElementById('user-email');
+        if (nameInput && emailInput) {
+            nameInput.value = name;
+            emailInput.value = email;
+        }
+
+        const registerButton = document.querySelector('#user-register-form button[onclick="registerUser()"]');
+        if (registerButton) {
+            registerButton.textContent = 'Update User';
+            registerButton.onclick = () => updateUser(email);
+        }
+    }
+
+    // Update user
+    function updateUser(email) {
+        const name = document.getElementById('user-name')?.value.trim();
+        const newEmail = document.getElementById('user-email')?.value.trim();
+        const password = document.getElementById('user-password')?.value.trim();
+        const confirmPassword = document.getElementById('user-confirm-password')?.value.trim();
+
+        if (!name || !newEmail) {
+            showError('user-registration', 'Please fill all required fields correctly');
+            return;
+        }
+
+        if (password && password !== confirmPassword) {
+            showError('user-registration', 'Passwords do not match');
+            return;
+        }
+
+        console.log('Update user request:', { email, name, newEmail });
+
+        fetch('/api/auth/update', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                email: newEmail, 
+                fullName: name, 
+                password: password || '********', 
+                confirmPassword: confirmPassword || '********', 
+                isAdmin: false 
+            })
+        })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Update failed: ${response.status} - ${errorText}`);
+                }
+                return response.text();
+            })
+            .then(data => {
+                alert(`User updated: ${name}`);
+                resetForm();
+                showSection('dashboard');
+            })
+            .catch(error => {
+                console.error('Update user error:', error);
+                showError('user-registration', `Failed to update user: ${error.message}`);
+            });
+    }
+
+    // Delete user
+    function deleteUser(email) {
+        if (!confirm('Are you sure you want to delete this user?')) return;
+
+        console.log('Delete user request:', { email });
+
+        fetch(`/api/auth/delete/${email}`, {
+            method: 'DELETE'
+        })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Deletion failed: ${response.status} - ${errorText}`);
+                }
+                alert('User deleted');
+                loadUsers();
+            })
+            .catch(error => {
+                console.error('Delete user error:', error);
+                showError('user-management', `Failed to delete user: ${error.message}`);
+            });
+    }
+</script>
+</body>
+</html>

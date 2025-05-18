@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Center</title>
+</head>
+<body>
+<!-- Dashboard Section -->
+<div id="dashboard">
+    <div>
+        <h1>
+            Admin Control Center
+        </h1>
+        <button onclick="logout()">
+            Logout
+        </button>
+    </div>
+    <div>
+        <div>
+            <h2>Admin Management</h2>
+            <p>Manage admin accounts and permissions.</p>
+            <button onclick="showSection('admin-registration')">
+                Add Admin
+            </button>
+            <button onclick="showSection('admin-management'); loadAdmins()">
+                Manage Admins
+            </button>
+        </div>
+        <div>
+            <h2>User Management</h2>
+            <p>Manage regular user accounts.</p>
+            <a href="user_management.html">
+                User Management Page
+            </a>
+        </div>
+        <div>
+            <h2>Review Management</h2>
+            <p>Monitor and moderate user reviews.</p>
+            <button onclick="showSection('review-management')">
+                Manage Reviews
+            </button>
+        </div>
+        <div>
+            <h2>Movie Management</h2>
+            <p>Add or remove movies from the catalog.</p>
+             <a href="movie_management.html">
+                Movie Management Page
+             </a>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Registration Section -->
+<div id="admin-registration" class="hidden">
+    <h2>Admin Registration</h2>
+    <div>
+        <form id="register-form">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <div>
+                <label><input type="radio" name="permission" value="FULL_ACCESS" required> Full Access</label>
+                <label><input type="radio" name="permission" value="LIMITED_ACCESS"> Limited Access</label>
+            </div>
+            <div id="admin-error-message" class="hidden"></div>
+            <button type="button" onclick="registerAdmin()">
+                Register Admin
+            </button>
+            <button type="button" onclick="navigateBack()">
+                Back
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Admin Management Section -->
+<div id="admin-management" class="hidden">
+    <h2>Admin Management</h2>
+    <div>
+        <p id="admin-loading" class="hidden">Loading admins...</p>
+        <div id="admin-error-message-list" class="hidden"></div>
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Permissions</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="admin-table-body"></tbody>
+            </table>
+        </div>
+        <button onclick="navigateBack()">
+            Back
+        </button>
+    </div>
+</div>
+
+<!-- Review Management Section -->
+<div id="review-management" class="hidden">
+    <h2>Review Management</h2>
+    <div>
+        <p id="review-loading" class="hidden">Loading reviews...</p>
+        <div id="review-error-message" class="hidden"></div>
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User Name</th>
+                    <th>Movie Name</th>
+                    <th>Rating</th>
+                    <th>Comments</th>
+                    <th>User ID</th>
+                    <th>Updated At</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="review-table-body"></tbody>
+            </table>
+        </div>
+        <button onclick="navigateBack()">
+            Back
+        </button>
+    </div>
+</div>
+
+
+
+<script>
+    // Show/hide sections
+    function showSection(sectionId) {
+        console.log(`Navigating to section: ${sectionId}`);
+        document.querySelectorAll('.container').forEach(section => {
+            if (section.id !== sectionId) {
+                section.classList.add('hidden');
+            } else {
+                section.classList.remove('hidden');
+            }
+        });
+        const targetSection = document.getElementById(sectionId);
+        if (!targetSection) {
+            console.error(`Section not found: ${sectionId}`);
+            showSection('dashboard'); // Fallback to dashboard
+        }
+
+        // Load reviews when review management section is shown
+        if (sectionId === 'review-management') {
+            loadReviews();
+        }
+    }
+
+    // Navigate back to dashboard
+    function navigateBack() {
+        console.log('Back button clicked, returning to dashboard');
+        showSection('dashboard');
+        resetForm(); // Reset form only for admin-registration
+    }
+
+    // Reset registration form
+    function resetForm() {
+        console.log('Resetting registration form');
+        const form = document.getElementById('register-form');
+        if (form) {
+            form.reset();
+        }
+        const errorMessage = document.getElementById('error-message');
+        if (errorMessage) {
+            errorMessage.classList.add('hidden');
+            errorMessage.textContent = '';
+        }
+        const registerButton = document.querySelector('#register-form button[onclick="registerAdmin()"]');
+        if (registerButton) {
+            registerButton.textContent = 'Register Admin';
+            registerButton.onclick = registerAdmin;
+        }
+    }
+
+    // Show error message
+    function showError(sectionId, message) {
+        let errorMessageId = 'admin-error-message';
+        if (sectionId === 'admin-management') {
+            errorMessageId = 'admin-error-message-list';
+        } else if (sectionId === 'user-registration') {
+            errorMessageId = 'user-error-message';
+        } else if (sectionId === 'user-management') {
+            errorMessageId = 'user-error-message-list';
+        }
+
+        const errorMessage = document.querySelector(`#${sectionId} #${errorMessageId}`);
+        if (errorMessage) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        } else {
+            alert(message);
+        }
+    }
+
+    // Register a new admin
+    function registerAdmin() {
+        const name = document.getElementById('name')?.value.trim();
+        const email = document.getElementById('email')?.value.trim();
+        const permission = document.querySelector('input[name="permission"]:checked')?.value;
+
+        if (!name || !email || !permission) {
+            showError('admin-registration', 'Please fill all fields correctly');
+            return;
+        }
+
+        const body = `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&permission=${permission}`;
+        console.log('Register admin request:', { name, email, permission });
+
+        fetch('/api/admin/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body
+        })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Registration failed: ${response.status} - ${errorText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(`Admin registered: ${data.name}`);
+                resetForm();
+                showSection('dashboard');
+            })
+            .catch(error => {
+                console.error('Register admin error:', error);
+                showError('admin-registration', `Failed to register admin: ${error.message}`);
+            });
+    }
+
+    // Load and display all admins with retry
+    function loadAdmins(retryCount = 0, maxRetries = 2) {
+        const loadingElement = document.getElementById('admin-loading');
+        const errorMessage = document.querySelector('#admin-management #admin-error-message-list');
+        if (loadingElement) {
+            loadingElement.classList.remove('hidden');
+        }
+        if (errorMessage) {
+            errorMessage.classList.add('hidden');
+        }
+
+        console.log(`Fetching admins from /api/admin/all (Attempt ${retryCount + 1}/${maxRetries + 1})`);
+
+        fetch('/api/admin/all')
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to fetch admins: ${response.status} - ${errorText}`);
+                }
+                return response.json();
+            })
+            .then(admins => {
+                const tbody = document.getElementById('admin-table-body');
+                if (!tbody) {
+                    throw new Error('Admin table body not found');
+                }
+                tbody.innerHTML = '';
+                if (!Array.isArray(admins) || admins.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">No admins found</td></tr>';
+                } else {
+                    admins.forEach(admin => {
+                        const safeName = admin.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const safeEmail = admin.email.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const safePermission = admin.permission.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                                <td>${safeName}</td>
+                                <td>${safeEmail}</td>
+                                <td>${safePermission}</td>
+                                <td>
+                                    <button onclick="editAdmin('${admin.id}', '${safeName}', '${safeEmail}', '${safePermission}')">Edit</button>
+                                    <button onclick="deleteAdmin('${admin.id}')">Delete</button>
+                                </td>
+                            `;
+                        tbody.appendChild(row);
+                    });
+                }
+                if (loadingElement) {
+                    loadingElement.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Load admins error:', error);
+                if (loadingElement) {
+                    loadingElement.classList.add('hidden');
+                }
+                if (retryCount < maxRetries && error.message.includes('Failed to fetch')) {
+                    console.log(`Retrying fetch admins (Attempt ${retryCount + 2})`);
+                    setTimeout(() => loadAdmins(retryCount + 1, maxRetries), 1000);
+                } else {
+                    const errorMsg = error.message.includes('Failed to fetch')
+                        ? 'Failed to load admins: Backend server may be down or inaccessible'
+                        : `Failed to load admins: ${error.message}`;
+                    showError('admin-management', errorMsg);
+                }
+            });
+    }
+
+    // Edit admin (populates registration form for updating)
+    function editAdmin(id, name, email, permission) {
+        showSection('admin-registration');
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        if (nameInput && emailInput) {
+            nameInput.value = name;
+            emailInput.value = email;
+        }
+        const permissionRadio = document.querySelector(`input[name="permission"][value="${permission}"]`);
+        if (permissionRadio) {
+            permissionRadio.checked = true;
+        }
+
+        const registerButton = document.querySelector('#register-form button[onclick="registerAdmin()"]');
+        if (registerButton) {
+            registerButton.textContent = 'Update Admin';
+            registerButton.onclick = () => updateAdmin(id);
+        }
+    }
+
+    // Update admin
+    function updateAdmin(id) {
+        const name = document.getElementById('name')?.value.trim();
+        const email = document.getElementById('email')?.value.trim();
+        const permission = document.querySelector('input[name="permission"]:checked')?.value;
+
+        if (!name || !email || !permission) {
+            showError('admin-registration', 'Please fill all fields correctly');
+            return;
+        }
+
+        const body = `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&permission=${permission}`;
+        console.log('Update admin request:', { id, name, email, permission });
+
+        fetch(`/api/admin/update/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body
+        })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Update failed: ${response.status} - ${errorText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(`Admin updated: ${data.name}`);
+                resetForm();
+                showSection('dashboard');
+            })
+            .catch(error => {
+                console.error('Update admin error:', error);
+                showError('admin-registration', `Failed to update admin: ${error.message}`);
+            });
+    }
+
+    // Delete admin
+    function deleteAdmin(id) {
+        if (!confirm('Are you sure you want to delete this admin?')) return;
+
+        console.log('Delete admin request:', { id });
+
+        fetch(`/api/admin/delete/${id}`, {
+            method: 'DELETE'
+        })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Deletion failed: ${response.status} - ${errorText}`);
+                }
+                alert('Admin deleted');
+                loadAdmins();
+            })
+            .catch(error => {
+                console.error('Delete admin error:', error);
+                showError('admin-management', `Failed to delete admin: ${error.message}`);
+            });
+    }
+
+    // Load and display all reviews with retry
+    function loadReviews(retryCount = 0, maxRetries = 2) {
+        const loadingElement = document.getElementById('review-loading');
+        const errorMessage = document.getElementById('review-error-message');
+        if (loadingElement) {
+            loadingElement.classList.remove('hidden');
+        }
+        if (errorMessage) {
+            errorMessage.classList.add('hidden');
+        }
+
+        console.log(`Fetching reviews from /api/feedback (Attempt ${retryCount + 1}/${maxRetries + 1})`);
+
+        fetch('/api/feedback')
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Failed to fetch reviews: ${response.status} - ${errorText}`);
+                }
+                return response.json();
+            })
+            .then(reviews => {
+                const tbody = document.getElementById('review-table-body');
+                if (!tbody) {
+                    throw new Error('Review table body not found');
+                }
+                tbody.innerHTML = '';
+                if (!Array.isArray(reviews) || reviews.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8">No reviews found</td></tr>';
+                } else {
+                    reviews.forEach(review => {
+                        const safeUserName = review.userName ? review.userName.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'N/A';
+                        const safeMovieName = review.movieName ? review.movieName.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'N/A';
+                        const safeComments = review.comments ? review.comments.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'N/A';
+                        const safeUserId = review.userId ? review.userId.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'N/A';
+                        const formattedDate = review.updatedAt ? new Date(review.updatedAt).toLocaleString() : 'N/A';
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                                <td>${review.id || 'N/A'}</td>
+                                <td>${safeUserName}</td>
+                                <td>${safeMovieName}</td>
+                                <td>${review.rating || 'N/A'}</td>
+                                <td>${safeComments}</td>
+                                <td>${safeUserId}</td>
+                                <td>${formattedDate}</td>
+                                <td>
+                                    <button onclick="deleteReview(${review.id})">Delete</button>
+                                </td>
+                            `;
+                        tbody.appendChild(row);
+                    });
+                }
+                if (loadingElement) {
+                    loadingElement.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Load reviews error:', error);
+                if (loadingElement) {
+                    loadingElement.classList.add('hidden');
+                }
+                if (retryCount < maxRetries && error.message.includes('Failed to fetch')) {
+                    console.log(`Retrying fetch reviews (Attempt ${retryCount + 2})`);
+                    setTimeout(() => loadReviews(retryCount + 1, maxRetries), 1000);
+                } else {
+                    const errorMsg = error.message.includes('Failed to fetch')
+                        ? 'Failed to load reviews: Backend server may be down or inaccessible'
+                        : `Failed to load reviews: ${error.message}`;
+                    showError('review-management', errorMsg);
+                }
+            });
+    }
+
+    // Delete review
+    function deleteReview(id) {
+        if (!confirm('Are you sure you want to delete this review?')) return;
+
+        console.log('Delete review request:', { id });
+
+        fetch(`/api/feedback/${id}`, {
+            method: 'DELETE'
+        })
+            .then(async response => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Deletion failed: ${response.status} - ${errorText}`);
+                }
+                alert('Review deleted');
+                loadReviews();
+            })
+            .catch(error => {
+                console.error('Delete review error:', error);
+                showError('review-management', `Failed to delete review: ${error.message}`);
+            });
+    }
+
+    // Logout function - redirects to authentication page
+    function logout() {
+        console.log('Logging out...');
+        // Clear any user data from localStorage if needed
+        localStorage.removeItem('currentUserEmail');
+        // Redirect to authentication page
+        window.location.href = 'authentication.html';
+    }
+</script>
+</body>
+</html>
