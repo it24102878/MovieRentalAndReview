@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie User Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+
+        input {
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            transform: scale(1.02);
+        }
+
+        button {
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        table tr {
+            transition: background-color 0.3s ease;
+        }
+
+        table tr:hover {
+            background-color: #1f2937;
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen flex flex-col">
+<header class="py-6 text-center">
+    <h1 class="text-4xl font-bold">Movie User Hub</h1>
+</header>
+<main class="container mx-auto p-6 flex-grow">
+    <!-- Registration Section -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-4">Register</h2>
+        <div class="bg-gray-900 p-6 rounded-lg shadow-lg max-w-md mx-auto">
+            <div class="space-y-4">
+                <div>
+                    <label for="reg-name" class="block text-sm font-medium">Name</label>
+                    <input type="text" id="reg-name" class="w-full p-2 bg-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                <div>
+                    <label for="reg-email" class="block text-sm font-medium">Email</label>
+                    <input type="email" id="reg-email" class="w-full p-2 bg-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                <div>
+                    <label for="reg-password" class="block text-sm font-medium">Password</label>
+                    <input type="password" id="reg-password" class="w-full p-2 bg-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                <button id="register-btn" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition">Register</button>
+            </div>
+            <p id="reg-message" class="mt-4 text-center"></p>
+        </div>
+    </section>
+
+    <!-- Update Profile Section -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-4">Update Profile</h2>
+        <div class="bg-gray-900 p-6 rounded-lg shadow-lg max-w-md mx-auto">
+            <div class="space-y-4">
+                <div>
+                    <label for="update-id" class="block text-sm font-medium">User ID</label>
+                    <input type="text" id="update-id" class="w-full p-2 bg-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                <div>
+                    <label for="update-name" class="block text-sm font-medium">Name</label>
+                    <input type="text" id="update-name" class="w-full p-2 bg-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                <div>
+                    <label for="update-email" class="block text-sm font-medium">Email</label>
+                    <input type="email" id="update-email" class="w-full p-2 bg-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                <div>
+                    <label for="update-password" class="block text-sm font-medium">Password</label>
+                    <input type="password" id="update-password" class="w-full p-2 bg-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-red-600">
+                </div>
+                <button id="update-btn" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 transition">Update</button>
+            </div>
+            <p id="update-message" class="mt-4 text-center"></p>
+        </div>
+    </section>
+
+    <!-- User List Section -->
+    <section>
+        <h2 class="text-2xl font-semibold mb-4">User List</h2>
+        <div class="bg-gray-900 p-6 rounded-lg shadow-lg">
+            <table id="user-table" class="w-full text-left">
+                <thead>
+                <tr class="border-b border-gray-700">
+                    <th class="py-2">ID</th>
+                    <th class="py-2">Name</th>
+                    <th class="py-2">Email</th>
+                    <th class="py-2">Actions</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<footer class="py-4 text-center">
+    <p>&copy; 2025 Movie User Hub. All rights reserved.</p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUsers();
+
+        // Register User
+        document.getElementById('register-btn').addEventListener('click', async () => {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const messageEl = document.getElementById('reg-message');
+
+            try {
+                const response = await fetch('/api/users/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                if (response.ok) {
+                    messageEl.textContent = 'Registration successful!';
+                    messageEl.className = 'text-green-500';
+                    loadUsers();
+                    document.getElementById('reg-name').value = '';
+                    document.getElementById('reg-email').value = '';
+                    document.getElementById('reg-password').value = '';
+                } else {
+                    const error = await response.json();
+                    messageEl.textContent = error.message || 'Registration failed';
+                    messageEl.className = 'text-red-500';
+                }
+            } catch (error) {
+                messageEl.textContent = 'Error: ' + error.message;
+                messageEl.className = 'text-red-500';
+            }
+        });
+
+        // Update User
+        document.getElementById('update-btn').addEventListener('click', async () => {
+            const id = document.getElementById('update-id').value;
+            const name = document.getElementById('update-name').value;
+            const email = document.getElementById('update-email').value;
+            const password = document.getElementById('update-password').value;
+            const messageEl = document.getElementById('update-message');
+
+            try {
+                const response = await fetch(`/api/users/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                if (response.ok) {
+                    messageEl.textContent = 'Update successful!';
+                    messageEl.className = 'text-green-500';
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    messageEl.textContent = error.message || 'Update failed';
+                    messageEl.className = 'text-red-500';
+                }
+            } catch (error) {
+                messageEl.textContent = 'Error: ' + error.message;
+                messageEl.className = 'text-red-500';
+            }
+        });
+    });
+
+    // Load Users
+    async function loadUsers() {
+        const tbody = document.querySelector('#user-table tbody');
+        tbody.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/users');
+            const users = await response.json();
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td class="py-2">${user.id}</td>
+                <td class="py-2">${user.name}</td>
+                <td class="py-2">${user.email}</td>
+                <td class="py-2">
+                    <button onclick="deleteUser('${user.id}')" class="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">Delete</button>
+                </td>
+            `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error loading users:', error);
+        }
+    }
+
+    // Delete User
+    async function deleteUser(id) {
+        try {
+            const response = await fetch(`/api/users/${id}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                loadUsers();
+            } else {
+                alert('Failed to delete user');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+</script>
+</body>
+</html>
